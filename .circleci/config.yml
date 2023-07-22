@@ -79,16 +79,17 @@ jobs:
               eks_cluster_name="rbt-devops-capstone"
               if aws eks describe-cluster --name "$eks_cluster_name" >/dev/null  2>&1; then
                 echo "$eks_cluster_name already exists"
-                echo "export EKS_CLUSTER_EXISTS=true" >> ~/$BASH_ENV
+                touch ~/cluster_exists.txt
+                echo "export EKS_CLUSTER_EXISTS=true" > ~/cluster_exists.txt
               else
-                echo "export EKS_CLUSTER_EXISTS=false" >> ~/$BASH_ENV
+                echo "export EKS_CLUSTER_EXISTS=false" > ~/cluster_exists.txt
               fi
               echo ~/$BASH_ENV
               cat ~/$BASH_ENV
         - persist_to_workspace:
             root: /
             paths:
-              - $BASH_ENV       
+              - ~/cluster_exists.txt
         - run:
             name: create EKS cluster
             command: |
