@@ -33,17 +33,19 @@ jobs:
             make lint    
   
   build-and-push-docker-image:
-    machine: true
-    working_directory: ~/app
+    working_directory: ~/apps
+    docker:
+      - image: docker:20.10.21-git
     steps:
+      - setup_remote_docker
       - checkout
       - run:
           name: Build/Push docker image
           command: |
             docker login --username rbtadikonda --password $DOCKER_HUB_PASSWORD
-            docker build --tag=rbtcapstone .
-            docker tag rbtcapstone rbtadikonda/rbtcapstone
-            docker push rbtadikonda/rbtcapstone
+            docker build --tag=rbtdevopscapstone .
+            docker tag rbtdevopscapstone rbtadikonda/rbtdevopscapstone
+            docker push rbtadikonda/rbtdevopscapstone
 
   create-eks-cluster:
       executor: aws-eks/python
@@ -63,11 +65,11 @@ jobs:
                   echo "eksctl is already available"
                   exit 0
               fi 
-              mkdir -p eksctl_install
-              curl -sL "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C eksctl_install
-              chmod +x eksctl_install/eksctl
-              sudo mv eksctl_install/eksctl /usr/local/bin/
-              rm -Rf eksctl_install
+              mkdir -p temp
+              curl -sL "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C temp
+              chmod +x temp/eksctl
+              sudo mv temp/eksctl /usr/local/bin/
+              rm -Rf temp
         - aws-eks/create-cluster:
             cluster-name: << parameters.eks-cluster-name >>
             zones: us-east-1a,us-east-1b,us-east-1c,us-east-1d,us-east-1f
@@ -79,7 +81,7 @@ jobs:
     parameters:
       eks-cluster-name:
         description: |
-          deployment to k8 eks cluster
+          deployment to eks cluster
         type: string
     steps:
       - checkout
@@ -90,7 +92,7 @@ jobs:
       - kubernetes/create-or-update-resource:
           get-rollout-status: false
           resource-file-path: eks-deployment/deployment-service.yml
-          resource-name: deployment/rbtcapstone
+          resource-name: deployment/rbtdevopscapstone
 
   check-cluster:
     executor: aws-eks/python
@@ -127,9 +129,9 @@ workflows:
             - create-eks-cluster
       - aws-eks/update-container-image:
           cluster-name: rbt-devops-capstone
-          container-image-updates: rbtcapstone=rbtadikonda/rbtcapstone
+          container-image-updates: rbtdevopscapstone=rbtadikonda/rbtdevopscapstone
           record: true
-          resource-name: deployment/rbtcapstone
+          resource-name: deployment/rbtdevopscapstone
           requires: 
             - deploy-to-eks-cluster
       - check-cluster:
