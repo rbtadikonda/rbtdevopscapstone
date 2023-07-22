@@ -84,8 +84,7 @@ jobs:
               else
                 echo "export EKS_CLUSTER_EXISTS=false" > ~/cluster_exists.txt
               fi
-              echo ~/$BASH_ENV
-              cat ~/$BASH_ENV
+              cat ~/cluster_exists.txt
         - persist_to_workspace:
             root: ~/
             paths:
