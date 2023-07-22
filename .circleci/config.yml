@@ -57,6 +57,7 @@ jobs:
       steps:
         - checkout
         - aws-eks/install-aws-iam-authenticator
+             
         - run:
             name: install eksctl
             command: |
@@ -73,6 +74,8 @@ jobs:
         - run:
             name: verify if EKS cluster already exists
             command: |
+              sudo apt update
+              sudo apt install awscli
               eks_cluster_name="rbt-devops-capstone"
               if aws eks describe-cluster --name "$eks_cluster_name" > /dev/null > 2&1; then
                 echo "$eks_cluster_name already exists"
@@ -89,10 +92,10 @@ jobs:
             command: |
               if [[ "$EKS_CLUSTER_EXISTS" != "true" ]]; then
                 aws-eks/create-cluster:
-                cluster-name: rbt-devops-capstone
-                zones: us-east-1a,us-east-1b,us-east-1c,us-east-1d,us-east-1f
-                node-type: t2.micro
-                nodes-max: 2
+                  cluster-name: rbt-devops-capstone
+                  zones: us-east-1a,us-east-1b,us-east-1c,us-east-1d,us-east-1f
+                  node-type: t2.micro
+                  nodes-max: 2
               else
                 echo "Skipping creation EKS cluster as rbt-devops-capstone cluster already exists"
               fi  
