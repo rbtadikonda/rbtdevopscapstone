@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rbtdevopscapstone
+  labels:
+    app: rbtdevopscapstone
+  namespace: default
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: rbtdevopscapstone
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: rbtdevopscapstone
+    spec:
+      containers:
+        - name: rbtdevopscapstone
+          image: rbtadikonda/rbtdevopscapstone        
+          ports:
+            - containerPort: 80
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rbtdevopscapstone
+  labels:
+    app: rbtdevopscapstone
+spec:
+  type: LoadBalancer
+  selector:
+    app: rbtdevopscapstone
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
