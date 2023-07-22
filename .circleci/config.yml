@@ -77,7 +77,7 @@ jobs:
               sudo apt update
               sudo apt install awscli
               eks_cluster_name="rbt-devops-capstone"
-              if aws eks describe-cluster --name "$eks_cluster_name" > /dev/null > 2&1; then
+              if aws eks describe-cluster --name "$eks_cluster_name" >/dev/null  2>&1; then
                 echo "$eks_cluster_name already exists"
                 echo "export EKS_CLUSTER_EXISTS=true" >> $BASH_ENV
               else
