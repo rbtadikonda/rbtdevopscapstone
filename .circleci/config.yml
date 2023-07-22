@@ -79,6 +79,7 @@ jobs:
                 echo "export EKS_CLUSTER_EXISTS=true" >> $BASH_ENV
               else
                 echo "export EKS_CLUSTER_EXISTS=false" >> $BASH_ENV
+              fi
         - persist_to_workspace:
             root: /
             paths:
