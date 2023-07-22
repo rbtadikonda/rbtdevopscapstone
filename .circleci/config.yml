@@ -70,11 +70,31 @@ jobs:
               chmod +x temp/eksctl
               sudo mv temp/eksctl /usr/local/bin/
               rm -Rf temp
-        - aws-eks/create-cluster:
-            cluster-name: << parameters.eks-cluster-name >>
-            zones: us-east-1a,us-east-1b,us-east-1c,us-east-1d,us-east-1f
-            node-type: t2.micro
-            nodes-max: 2
+        - run:
+            name: verify if EKS cluster already exists
+            command: |
+              eks_cluster_name = "rbt-devops-capstone"
+              if aws eks describe-cluster --name "$eks_cluster_name" > /dev/null > 2&1; then
+                echo "$eks_cluster_name already exists"
+                echo "export EKS_CLUSTER_EXISTS=true" >> $BASH_ENV
+              else
+                echo "export EKS_CLUSTER_EXISTS=false" >> $BASH_ENV
+        - persist_to_workspace:
+            root: /
+            paths:
+              - $BASH_ENV       
+        - run:
+            name: create EKS cluster
+            command: |
+              if [[ "$EKS_CLUSTER_EXISTS" != "true" ]]; then
+                aws-eks/create-cluster:
+                cluster-name: rbt-devops-capstone
+                zones: us-east-1a,us-east-1b,us-east-1c,us-east-1d,us-east-1f
+                node-type: t2.micro
+                nodes-max: 2
+              else
+                echo "Skipping creation EKS cluster as rbt-devops-capstone cluster already exists"
+              fi  
 
   deploy-to-eks-cluster:
     executor: aws-eks/python
@@ -111,22 +131,23 @@ jobs:
             kubectl get services
             kubectl get deployment
             kubectl get nodes
+            kubectl get pods -n rbt-devops-capstone
 
 workflows:
   default:
     jobs:
-      #- linter
-      #- build-and-push-docker-image:
-      #    requires:
-      #      - linter
-      #- create-eks-cluster:
-      #    eks-cluster-name: rbt-devops-capstone
-      #    requires:
-      #      - build-and-push-docker-image
+      - linter
+      - build-and-push-docker-image:
+          requires:
+            - linter
+      - create-eks-cluster:
+          eks-cluster-name: rbt-devops-capstone
+          requires:
+            - build-and-push-docker-image
       - deploy-to-eks-cluster:
           eks-cluster-name: rbt-devops-capstone
-      #    requires: 
-      #      - create-eks-cluster
+          requires: 
+            - create-eks-cluster
       - aws-eks/update-container-image:
           cluster-name: rbt-devops-capstone
           container-image-updates: rbtdevopscapstone=rbtadikonda/rbtdevopscapstone
