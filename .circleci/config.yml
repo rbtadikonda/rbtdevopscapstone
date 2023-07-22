@@ -42,6 +42,8 @@ jobs:
       - run:
           name: Build/Push docker image
           command: |
+            #docker hub user name and image name could have been defined in circleci environment
+            #however for rubrik purpose they are hardcoded here otherwise pipeline output is masking those values
             docker login --username rbtadikonda --password $DOCKER_HUB_PASSWORD
             docker build --tag=rbtdevopscapstone .
             docker tag rbtdevopscapstone rbtadikonda/rbtdevopscapstone
