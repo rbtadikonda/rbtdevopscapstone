@@ -87,9 +87,9 @@ jobs:
               echo ~/$BASH_ENV
               cat ~/$BASH_ENV
         - persist_to_workspace:
-            root: /
+            root: ~/
             paths:
-              - ~/cluster_exists.txt
+              - cluster_exists.txt
         - run:
             name: create EKS cluster
             command: |
