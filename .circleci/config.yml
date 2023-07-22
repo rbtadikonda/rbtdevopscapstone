@@ -90,7 +90,7 @@ jobs:
           cluster-name: << parameters.eks-cluster-name >>
           install-kubectl: true
       - kubernetes/create-or-update-resource:
-          get-rollout-status: false
+          get-rollout-status: true
           resource-file-path: eks-deployment/deployment-service.yml
           resource-name: deployment/rbtdevopscapstone
 
