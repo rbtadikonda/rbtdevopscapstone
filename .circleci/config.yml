@@ -93,7 +93,6 @@ jobs:
           cluster-name: << parameters.eks-cluster-name >>
           install-kubectl: true
       - kubernetes/create-or-update-resource:
-          get-rollout-status: false
           resource-file-path: eks-deployment/deployment-service.yml
           resource-name: deployment/rbtdevopscapstone
 
@@ -111,10 +110,12 @@ jobs:
       - run:
           name: check cluster for services deployemnt and nodes
           command: |
+            echo "Listing all services in the namespace "
             kubectl get services
+            echo "Listing the deployment"
             kubectl get deployment
+            echo "displaying the worker nodes"
             kubectl get nodes
-            kubectl get pods -n rbt-devops-capstone
 
 workflows:
   default:
@@ -125,8 +126,6 @@ workflows:
             - linter
       - create-eks-cluster:
           eks-cluster-name: rbt-devops-capstone
-          requires:
-            - build-and-push-docker-image
       - deploy-to-eks-cluster:
           eks-cluster-name: rbt-devops-capstone
           requires: 
